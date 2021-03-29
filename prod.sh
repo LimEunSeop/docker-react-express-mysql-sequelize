@@ -1,4 +1,4 @@
 #!/bin/bash
 
-git pull "repository URL"
+git pull
 docker-compose -f docker-compose.prod.yml --env-file ./config/.env.prod up --build
