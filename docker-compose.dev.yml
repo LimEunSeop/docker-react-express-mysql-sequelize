@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile-dev
+    command: 'npm run start:dev'
+    ports:
+      - 3000:3000
+    working_dir: '/usr/src/app'
+    volumes:
+      - ./client/src:/usr/src/app/src
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile-dev
+    depends_on:
+      - db
+    command:
+      [
+        './wait-for-it.sh',
+        'db:3306',
+        '--',
+        'bash',
+        '-c',
+        'npx sequelize-cli db:migrate && npm run start:dev',
+      ]
+    ports:
+      - 8080:8080
+    working_dir: '/usr/src/app'
+    volumes:
+      - ./server/src:/usr/src/app/src
+    environment:
+      - NODE_ENV=development
+  # (echo >/dev/tcp/mysql/3306) &>/dev/null && echo "open" || echo "closed"
+  db:
+    image: mysql:8
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    cap_add:
+      - SYS_NICE # CAP_SYS_NICE
+    volumes:
+      - ./db_dev:/var/lib/mysql

@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile-prod
+    command: 'npm run start:prod'
+    ports:
+      - 80:80
+    working_dir: '/usr/src/app'
+    restart: always
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile-prod
+    depends_on:
+      - db
+    command:
+      [
+        './wait-for-it.sh',
+        'db:3306',
+        '--',
+        'bash',
+        '-c',
+        'npx sequelize-cli db:migrate && npm run start:prod',
+      ]
+    ports:
+      - 8080:8080
+    working_dir: '/usr/src/app'
+    restart: always
+    environment:
+      - NODE_ENV=production
+
+  db:
+    image: mysql:8
+    ports:
+      - 3306:3306
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    cap_add:
+      - SYS_NICE # CAP_SYS_NICE
+    volumes:
+      - ./db_prod:/var/lib/mysql
