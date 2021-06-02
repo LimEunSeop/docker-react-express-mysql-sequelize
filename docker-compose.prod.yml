@@ -44,4 +44,4 @@ services:
     cap_add:
       - SYS_NICE # CAP_SYS_NICE
     volumes:
-      - ./db_prod:/var/lib/mysql
+      - ./db:/var/lib/mysql

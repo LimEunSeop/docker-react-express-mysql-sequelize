@@ -45,4 +45,4 @@ services:
     cap_add:
       - SYS_NICE # CAP_SYS_NICE
     volumes:
-      - ./db_dev:/var/lib/mysql
+      - ./db:/var/lib/mysql
