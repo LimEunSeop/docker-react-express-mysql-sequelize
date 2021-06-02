@@ -1,20 +1,9 @@
 version: '3.8'
 
 services:
-  client:
+  web:
     build:
-      context: ./client
-      dockerfile: Dockerfile-dev
-    command: 'npm run start:dev'
-    ports:
-      - 3000:3000
-    working_dir: '/usr/src/app'
-    volumes:
-      - ./client/src:/usr/src/app/src
-
-  server:
-    build:
-      context: ./server
+      context: ./web
       dockerfile: Dockerfile-dev
     depends_on:
       - db
@@ -25,24 +14,29 @@ services:
         '--',
         'bash',
         '-c',
-        'npx sequelize-cli db:migrate && npm run start:dev',
+        'cd server && npx sequelize-cli db:migrate && cd .. && npm start',
       ]
     ports:
-      - 8080:8080
+      - 3000:3000
+      - 3001:3001
     working_dir: '/usr/src/app'
     volumes:
-      - ./server/src:/usr/src/app/src
+      - ./web/server:/usr/src/app/server
+      - ./web/client/src:/usr/src/app/client/src
     environment:
       - NODE_ENV=development
+      - SERVER_PORT=3001
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
+
   # (echo >/dev/tcp/mysql/3306) &>/dev/null && echo "open" || echo "closed"
   db:
     image: mysql:8
     ports:
       - 3306:3306
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-    cap_add:
-      - SYS_NICE # CAP_SYS_NICE
+      - MYSQL_ROOT_PASSWORD=${DB_PASS}
+      - MYSQL_DATABASE=${DB_NAME}
     volumes:
       - ./db:/var/lib/mysql

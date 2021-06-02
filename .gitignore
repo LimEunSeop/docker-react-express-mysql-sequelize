@@ -1,4 +1,9 @@
+# MISC
 .DS_Store
-/config
-/db_dev
-/db_prod
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+/db
